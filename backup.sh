@@ -20,13 +20,17 @@ if [ ! -d "$BACKUP_PATH" ]; then
     exit 1
 fi
 
+echo "Starting backup of ${BACKUP_PATH} (tag: ${BACKUP_TAG})"
+
 SOURCE_SIZE=$(du -sh "${BACKUP_PATH}" | cut -f1)
+echo "Source size: ${SOURCE_SIZE}"
 
 if ! restic snapshots --quiet > /dev/null 2>&1; then
     echo "Repository not found, initializing..."
     restic init
 fi
 
+echo "Running backup..."
 BACKUP_LOG=$(mktemp)
 restic backup "${BACKUP_PATH}" --tag "${BACKUP_TAG}" --verbose > "$BACKUP_LOG" 2>&1 || { cat "$BACKUP_LOG" >&2; rm -f "$BACKUP_LOG"; exit 1; }
 
@@ -38,6 +42,9 @@ UPLOADED=$(grep "Added to the repository:" "$BACKUP_LOG" | sed 's/.*Added to the
 DURATION=$(grep "^processed" "$BACKUP_LOG" | awk '{print $NF}')
 rm -f "$BACKUP_LOG"
 
+echo "Backup done in ${DURATION} — snapshot ${SNAPSHOT_ID} (new: ${FILES_NEW}, changed: ${FILES_CHANGED}, unchanged: ${FILES_UNMODIFIED}, uploaded: ${UPLOADED})"
+
+echo "Pruning old snapshots (keep last ${RETENTION_KEEP_LAST})..."
 FORGET_LOG=$(mktemp)
 restic forget --prune --tag "${BACKUP_TAG}" --keep-last "${RETENTION_KEEP_LAST}" > "$FORGET_LOG" 2>&1 || { cat "$FORGET_LOG" >&2; rm -f "$FORGET_LOG"; exit 1; }
 REMOVED=$(grep "snapshots have been removed" "$FORGET_LOG" | awk '{print $1}')
@@ -50,21 +57,4 @@ REPO_SIZE=$(grep "Total Size:" "$STATS_LOG" | awk '{print $3, $4}')
 REPO_SNAPSHOTS=$(grep "Snapshots:" "$STATS_LOG" | awk '{print $2}')
 rm -f "$STATS_LOG"
 
-echo ""
-echo "==============================="
-echo "  Backup complete"
-echo "==============================="
-printf "  Tag       : %s\n" "${BACKUP_TAG}"
-printf "  Source    : %s (%s)\n" "${BACKUP_PATH}" "${SOURCE_SIZE}"
-printf "  Snapshot  : %s\n" "${SNAPSHOT_ID}"
-printf "  Duration  : %s\n" "${DURATION}"
-echo "-------------------------------"
-printf "  New files : %s\n" "${FILES_NEW}"
-printf "  Changed   : %s\n" "${FILES_CHANGED}"
-printf "  Unchanged : %s\n" "${FILES_UNMODIFIED}"
-printf "  Uploaded  : %s\n" "${UPLOADED}"
-echo "-------------------------------"
-printf "  Kept      : %s snapshots\n" "${REPO_SNAPSHOTS}"
-printf "  Removed   : %s snapshots\n" "${REMOVED}"
-printf "  Repo size : %s\n" "${REPO_SIZE}"
-echo "==============================="
+echo "Retention: ${REPO_SNAPSHOTS} snapshots kept, ${REMOVED} removed — repo size: ${REPO_SIZE}"

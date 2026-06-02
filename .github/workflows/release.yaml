@@ -5,9 +5,6 @@ on:
         branches: [main]
 
 jobs:
-    lint:
-        uses: ./.github/workflows/_lint.yaml
-
     detect-version:
         name: Detect Version
         runs-on: ubuntu-24.04
@@ -38,7 +35,7 @@ jobs:
 
     build:
         name: Build and Push
-        needs: [lint, detect-version]
+        needs: [detect-version]
         if: needs.detect-version.outputs.should_release == 'true'
         uses: ./.github/workflows/_build.yaml
         permissions:

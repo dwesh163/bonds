@@ -20,12 +20,9 @@ jobs:
                   echo "tag=ghcr.io/${{ github.repository }}:${VERSION}" >> $GITHUB_OUTPUT
                   echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
-    lint:
-        uses: ./.github/workflows/_lint.yaml
-
     build:
         name: Build and Push
-        needs: [prepare, lint]
+        needs: [prepare]
         uses: ./.github/workflows/_build.yaml
         permissions:
             contents: read

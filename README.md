@@ -34,8 +34,8 @@ kubectl apply -f cronjob.yaml
 The image is published to the GitHub Container Registry on every release:
 
 ```
-ghcr.io/epfl-si/bonds:latest
-ghcr.io/epfl-si/bonds:<version>
+ghcr.io/dwesh163/bonds:latest
+ghcr.io/dwesh163/bonds:<version>
 ```
 
 To build locally:

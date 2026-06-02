@@ -27,6 +27,9 @@ jobs:
         name: Build and Push
         needs: [prepare, lint]
         uses: ./.github/workflows/_build.yaml
+        permissions:
+            contents: read
+            packages: write
         with:
             tags: ${{ needs.prepare.outputs.tag }}
             version: ${{ needs.prepare.outputs.version }}

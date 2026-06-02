@@ -41,6 +41,9 @@ jobs:
         needs: [lint, detect-version]
         if: needs.detect-version.outputs.should_release == 'true'
         uses: ./.github/workflows/_build.yaml
+        permissions:
+            contents: read
+            packages: write
         with:
             tags: |
                 ghcr.io/${{ github.repository }}:latest

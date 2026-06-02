@@ -17,7 +17,8 @@ jobs:
                   BRANCH=$(echo "${{ github.head_ref }}" | sed 's/[^a-zA-Z0-9._-]/-/g')
                   SHA="${{ github.sha }}"
                   VERSION="${BRANCH}-${SHA:0:7}"
-                  echo "tag=ghcr.io/${{ github.repository }}:${VERSION}" >> $GITHUB_OUTPUT
+                  IMAGE=$(echo "ghcr.io/${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+                  echo "tag=${IMAGE}:${VERSION}" >> $GITHUB_OUTPUT
                   echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
     build:

@@ -13,6 +13,7 @@ jobs:
         outputs:
             version: ${{ steps.get_version.outputs.version }}
             should_release: ${{ steps.check.outputs.should_release }}
+            image: ${{ steps.get_version.outputs.image }}
         steps:
             - name: Checkout
               uses: actions/checkout@v5
@@ -23,6 +24,8 @@ jobs:
                   VERSION=$(cat .version | tr -d '[:space:]')
                   [ -z "$VERSION" ] && echo "No version in .version" && exit 1
                   echo "version=$VERSION" >> $GITHUB_OUTPUT
+                  IMAGE=$(echo "ghcr.io/${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+                  echo "image=$IMAGE" >> $GITHUB_OUTPUT
 
             - name: Check if release exists
               id: check
@@ -43,8 +46,8 @@ jobs:
             packages: write
         with:
             tags: |
-                ghcr.io/${{ github.repository }}:latest
-                ghcr.io/${{ github.repository }}:${{ needs.detect-version.outputs.version }}
+                ${{ needs.detect-version.outputs.image }}:latest
+                ${{ needs.detect-version.outputs.image }}:${{ needs.detect-version.outputs.version }}
             version: ${{ needs.detect-version.outputs.version }}
         secrets: inherit
 

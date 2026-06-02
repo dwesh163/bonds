@@ -32,7 +32,7 @@ fi
 
 echo "Running backup..."
 BACKUP_LOG=$(mktemp)
-restic backup --no-cache "${BACKUP_PATH}" --tag "${BACKUP_TAG}" --host "${BACKUP_TAG}" --verbose > "$BACKUP_LOG" 2>&1 || { cat "$BACKUP_LOG" >&2; rm -f "$BACKUP_LOG"; exit 1; }
+restic backup --no-cache "${BACKUP_PATH}" --tag "${BACKUP_TAG}" --host "${BACKUP_TAG}" --ignore-ctime --verbose > "$BACKUP_LOG" 2>&1 || { cat "$BACKUP_LOG" >&2; rm -f "$BACKUP_LOG"; exit 1; }
 
 SNAPSHOT_ID=$(grep "snapshot .* saved" "$BACKUP_LOG" | awk '{print $2}')
 FILES_NEW=$(grep "^Files:" "$BACKUP_LOG" | awk '{print $2}')
@@ -58,3 +58,4 @@ REPO_SNAPSHOTS=$(grep "Snapshots processed:" "$STATS_LOG" | awk '{print $3}')
 rm -f "$STATS_LOG"
 
 echo "Retention: ${REPO_SNAPSHOTS} snapshots kept, ${REMOVED} removed — repo size: ${REPO_SIZE}"
+echo "Backup complete"
